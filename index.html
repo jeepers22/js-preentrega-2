@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/style.css">
+    <title>Login</title>
+</head>
+<body>
+
+    <div class="login-container">
+        <h1 id="login-titulo" class="login-titulo"></h1>
+        <form id="login-form" class="login-form">
+            <div class="login__item">
+                <label for="user">Ingrese usuario:</label>
+                <input type="text" id="login-user">
+            </div>
+            <div class="login__item">
+                <label for="pass">Ingrese contraseña:</label>
+                <input  type="password" id="login-pass">
+            </div>
+            <button type="submit" class="btn login__btn">Iniciar sesión</button>
+            <a href="./secciones/registro.html">Registrarme</a>
+        </form>
+    </div>
+
+    <div id="search-container" class="search-container" hidden>
+        <form id="search-form" class="search-form">
+            <input type="text" id="search-product" placeholder="producto a buscar...">
+            <button type="submit" class="btn search__btn">Buscar</button>
+        </form>
+    </div>
+
+    <div class="productos-container" id="productos-container"></div>
+
+    <script src="./javascript/index.js"></script>
+</body>
+</html>

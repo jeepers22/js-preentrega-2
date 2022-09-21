@@ -1,0 +1,91 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: 0;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    background-color: rgb(0, 155, 46);
+}
+
+.btn {
+    cursor: pointer;
+}
+
+.login-titulo, .registro-titulo {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.login-container, .registro-container {
+    margin-top: 50px;
+}
+
+.login-form, .registro-form {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    width: 320px;
+    gap: 10px;
+}
+
+.login__item, .registro__item {
+    display: flex;
+    justify-content: space-between;
+}
+
+.login-form .btn, .registro-form .btn {
+    margin: 10px 100px 0;
+}
+
+.login-form a {
+    text-align: center;
+}
+
+.search-container {
+    text-align: center;
+    margin: 50px;
+}
+
+.productos-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 50px auto 50px;
+    width: 80%;
+    max-width: 1000px;
+}
+
+.producto-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 250px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, .5);
+}
+
+.producto-img {
+    background-color: #fff;
+    width: calc(100% - 20px);
+    padding: 10px;
+}
+
+.producto__info {
+    width: calc(100% - 20px);
+    height: 100%;
+    color: white;
+    background-color: black;
+    text-align: center;
+    padding: 10px;
+}
+
+.agregar-carrito, .modificar-prod, .eliminar-prod {
+    margin: 15px 5px 5px 5px;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
