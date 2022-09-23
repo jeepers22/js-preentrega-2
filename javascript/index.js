@@ -2,6 +2,7 @@
 
 let usuarios = []
 let productos = []
+let carrito = []
 
 // VAR DOM ELEMENTS
 
@@ -46,7 +47,8 @@ class Usuario {
 class Producto {
 
     // ATRIBUTOS
-    constructor(tipoProd, marca, precio, stock, imagen) {
+    constructor(id, tipoProd, marca, precio, stock, imagen) {
+        this.id = id
         this.tipoProd = tipoProd
         this.marca = marca
         this.precio = precio
@@ -73,8 +75,12 @@ class Producto {
         this.stock = this.stock - cant
     }
 
-    registrarProducto = () => {
+    altaCatalogo = () => {
         productos.push(this)
+    }
+
+    altaCarrito = () => {
+        carrito.push(this)
     }
 }
 
@@ -96,25 +102,27 @@ function domElementsInit() {
     domSearchForm = document.getElementById("search-form")
     domSearchProduct = document.getElementById("search-product")
     domProductos = document.getElementById("productos-container")
+    domCarrito = document.getElementById("carrito-container")
 }
 
 /* ================ EVENTOS DEL DOM ================ */
 
-function obtenerLoginPorDOM() {
+function eventoLogin() {
     domLoginForm?.addEventListener("submit", gestionarLogin) // Al cambiar de HTML hay que verificar si el evento existe, sino da error
 }
 
-function obtenerSearchProductPorDOM() {
+function eventoSearch() {
     domSearchForm?.addEventListener("submit",searchProduct) // Al cambiar de HTML hay que verificar si el evento existe, sino da error
 }
 
-function obtenerRegistroPorDOM() {
+function eventoRegistroUsuario() {
     domRegistroForm?.addEventListener("submit", gestionarAlta) // Al cambiar de HTML hay que verificar si el evento existe, sino da error
 }
 
 /* ================ DECLARACIÓN DE FUNCIONES ================ */
 
 function gestionarLogin(event) {
+
     event.preventDefault()
     let objectUser = new Usuario(domLoginUser.value, domLoginPass.value, false)
     domLoginForm.reset();
@@ -161,28 +169,41 @@ productoExistente = (tipoProdAlta, marcaAlta) => productos.some((producto) => pr
 
 function mostrarProductos(listProducts, targetActions) {
     domProductos.innerHTML = ""  // Evita carga repetida de catálogo ante más de un despliegue de de compra
-    listProducts.forEach((producto) => domProductos.innerHTML += `
-    <div class="producto-card">
-        <img src="${producto.imagen}" alt="textoPrueba" class="producto-img">
-        <div class= "producto__info">
-            <h3>Producto: ${producto.tipoProd} - ${producto.marca}</h3>
-            <p>Precio: ${producto.precio} - Cantidad: ${producto.stock}</p>
-            ${actionButtons(targetActions)}
+    listProducts.forEach((producto) => {
+        domProductos.innerHTML += `
+        <div class="producto-card" id="producto-card-${producto.id}">
+            <img src="${producto.imagen}" alt="textoPrueba" class="producto-img">
+            <div class= "producto__info">
+                <h3>Producto: ${producto.tipoProd} - ${producto.marca}</h3>
+                <p>Precio: ${producto.precio} - Cantidad: ${producto.stock}</p>
+                ${actionButtons(targetActions, producto.id)}
+            </div>
         </div>
-    </div>
-    `)
+        `
+
+        let domBtnAltaCarrito = document.getElementById(`agregar-carrito-${producto.id}`)
+        console.log(domBtnAltaCarrito)
+        // domBtnAltaCarrito.addEventListener("click", () => enviarACarrito(producto))
+        domBtnAltaCarrito.addEventListener("click", () => {console.log("CLICK CARRITO")})
+        // domBtnAltaCarrito.onclick = () => enviarACarrito(producto.id);
+    })
 }
 
-function actionButtons (target) {
+function actionButtons (target, idProd) {
 
     // OBJETO ACCIONES
     const actions = {
-        "admin": `<button id="modificar-prod" class="modificar-prod">Modificar</button>
-                  <button id="eliminar-prod" class="eliminar-prod">Eliminar</button>`,
-        "client": `<button id="agregar-carrito" class="agregar-carrito">Agregar al carrito</button>`,
-        "": ""
+        "admin": `<button id="modificar-prod-${idProd}" class="btn modificar-prod">Modificar</button>
+                  <button id="eliminar-prod-${idProd}" class="btn eliminar-prod">Eliminar</button>`,
+        "client": `<button id="agregar-carrito-${idProd}" class="btn agregar-carrito">Agregar al carrito</button>`,
+        "": ""  //! En algun momento tengo que sacar esto
     }
     return actions[target]
+}
+
+function enviarACarrito(prod) {
+    prod.altaCarrito()
+    console.log(carrito)
 }
 
 /* ================ DECLARACIÓN FUNCIÓN PRINCIPAL ================ */
@@ -190,15 +211,15 @@ function actionButtons (target) {
 function main() {
 
     // CARGA DE CATÁLOGO
-    productos.push(new Producto("Paleta", "BlackCrown", 60000, 10, "./img/paleta-black.png"))
-    productos.push(new Producto("Paleta", "ML10", 50000, 5, "./img/paleta-ml10.png"))
-    productos.push(new Producto("Paleta", "Siux", 65000, 15, "./img/paleta-siux.png"))
-    productos.push(new Producto("Paleta", "WingPro", 35000, 4, "./img/paleta-wing.png"))
-    productos.push(new Producto("Bolso", "Adidas", 25000, 10, "./img/bolso-adidas.jpg"))
-    productos.push(new Producto("Mochila", "Nike", 18000, 6, "./img/mochila-nike.jpg"))
-    productos.push(new Producto("Muñequeras", "UnderArmour", 1000, 15, "./img/muniequera-under.jpg"))
-    productos.push(new Producto("Tubo Pelotas", "Adidas", 2000, 8, "./img/pelotas-adidas.jpg"))
-    productos.push(new Producto("Tubo Pelotas", "Prince", 1500, 4, "./img/pelotas-prince.jpg"))
+    productos.push(new Producto(1, "Paleta", "BlackCrown", 60000, 10, "./img/paleta-black.png"))
+    productos.push(new Producto(2, "Paleta", "ML10", 50000, 5, "./img/paleta-ml10.png"))
+    productos.push(new Producto(3, "Paleta", "Siux", 65000, 15, "./img/paleta-siux.png"))
+    productos.push(new Producto(4, "Paleta", "WingPro", 35000, 4, "./img/paleta-wing.png"))
+    productos.push(new Producto(5, "Bolso", "Adidas", 25000, 10, "./img/bolso-adidas.jpg"))
+    productos.push(new Producto(6, "Mochila", "Nike", 18000, 6, "./img/mochila-nike.jpg"))
+    productos.push(new Producto(7, "Muñequeras", "UnderArmour", 1000, 15, "./img/muniequera-under.jpg"))
+    productos.push(new Producto(8, "Tubo Pelotas", "Adidas", 2000, 8, "./img/pelotas-adidas.jpg"))
+    productos.push(new Producto(9, "Tubo Pelotas", "Prince", 1500, 4, "./img/pelotas-prince.jpg"))
 
 
     // GENERACIÓN DE USUARIOS
@@ -207,13 +228,11 @@ function main() {
     usuarios.push(new Usuario("a", "a", false))
 
     domElementsInit()
-    obtenerLoginPorDOM()
-    obtenerSearchProductPorDOM()
-    obtenerRegistroPorDOM()
+    eventoLogin()
+    eventoSearch()
+    eventoRegistroUsuario()
 }
 
 /* ================ LLAMADO FUNCIÓN PRINCIPAL ================ */
 
 main()
-
-
