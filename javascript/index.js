@@ -8,6 +8,7 @@ let carrito = []
 
 let domLoginTitle
 let domRegistroTitle
+let domLogin
 let domLoginForm
 let domLoginUser
 let domLoginPass
@@ -78,10 +79,6 @@ class Producto {
     altaCatalogo = () => {
         productos.push(this)
     }
-
-    altaCarrito = () => {
-        carrito.push(this)
-    }
 }
 
 /* ================ ELEMENTOS DEL DOM ================ */
@@ -89,6 +86,7 @@ class Producto {
 function domElementsInit() {
     domLoginTitle = document.getElementById("login-titulo")
     domRegistroTitle = document.getElementById("registro-titulo")
+    domLogin = document.getElementById("login-container")
     domLoginForm = document.getElementById("login-form")
     domLoginUser = document.getElementById("login-user")
     domLoginPass = document.getElementById("login-pass")
@@ -129,6 +127,7 @@ function gestionarLogin(event) {
     domLoginTitle.innerText = ""
     if (validarLogin(objectUser.user, objectUser.password)) {
         domLoginTitle.innerText += `Bienvenido ${objectUser.user}!`
+        domLogin.hidden = true
         domSearch.hidden = false
         !objectUser.esAdmin() ? mostrarProductos(productos, "client") : mostrarProductos(productos,"admin")
     }
@@ -167,43 +166,84 @@ usuarioExistente = (userAlta) => usuarios.some((usuario) => usuario.user === use
 
 productoExistente = (tipoProdAlta, marcaAlta) => productos.some((producto) => producto.tipoProd === tipoProdAlta && producto.marca === marcaAlta)
 
+// function mostrarProductos(listProducts, targetActions) {
+//     domProductos.innerHTML = ""  // Evita carga repetida de catálogo ante más de un despliegue de de compra
+//     listProducts.forEach((producto) => {
+//         domProductos.innerHTML += `
+//         <div class="producto-card" id="producto-card-${producto.id}">
+//             <img src="${producto.imagen}" alt="textoPrueba" class="producto-img">
+//             <div class= "producto__info">
+//                 <h3>Producto: ${producto.tipoProd} - ${producto.marca}</h3>
+//                 <p>Precio: ${producto.precio} - Cantidad: ${producto.stock}</p>
+//                 ${actionButtons(targetActions, producto.id)}
+//             </div>
+//         </div>
+//         `
+
+//         let domBtnAltaCarrito = document.getElementById(`agregar-carrito-${producto.id}`)
+//         domBtnAltaCarrito.addEventListener("click", () => enviarACarrito(producto))   // NO FUNCIONA
+//         console.log(domBtnAltaCarrito)
+//     })
+// }
 function mostrarProductos(listProducts, targetActions) {
     domProductos.innerHTML = ""  // Evita carga repetida de catálogo ante más de un despliegue de de compra
     listProducts.forEach((producto) => {
-        domProductos.innerHTML += `
-        <div class="producto-card" id="producto-card-${producto.id}">
+        let domCard = document.createElement("div")
+        domCard.className = "producto-card"
+        domCard.id = "producto-card-${producto.id}"
+        domCard.innerHTML = `
             <img src="${producto.imagen}" alt="textoPrueba" class="producto-img">
-            <div class= "producto__info">
+            <div class="producto__info">
                 <h3>Producto: ${producto.tipoProd} - ${producto.marca}</h3>
                 <p>Precio: ${producto.precio} - Cantidad: ${producto.stock}</p>
+            </div>
+            <div class="producto__compra">
                 ${actionButtons(targetActions, producto.id)}
             </div>
-        </div>
-        `
+            `
+        domProductos.append(domCard)
 
         let domBtnAltaCarrito = document.getElementById(`agregar-carrito-${producto.id}`)
-        console.log(domBtnAltaCarrito)
-        // domBtnAltaCarrito.addEventListener("click", () => enviarACarrito(producto))
-        domBtnAltaCarrito.addEventListener("click", () => {console.log("CLICK CARRITO")})
-        // domBtnAltaCarrito.onclick = () => enviarACarrito(producto.id);
+        let domCantAComprar = document.getElementById(`cant-carrito-${producto.id}`)
+        domBtnAltaCarrito?.addEventListener("click", () => {
+            enviarACarrito(producto.id, domCantAComprar.value)
+            domCantAComprar.value = ""
+        })
     })
 }
 
 function actionButtons (target, idProd) {
-
-    // OBJETO ACCIONES
     const actions = {
         "admin": `<button id="modificar-prod-${idProd}" class="btn modificar-prod">Modificar</button>
                   <button id="eliminar-prod-${idProd}" class="btn eliminar-prod">Eliminar</button>`,
-        "client": `<button id="agregar-carrito-${idProd}" class="btn agregar-carrito">Agregar al carrito</button>`,
+        "client": `<input type="number" class="cant-producto" id="cant-carrito-${idProd}">
+                   <button type="submit" id="agregar-carrito-${idProd}" class="btn agregar-carrito">Agregar al carrito</button>`,
         "": ""  //! En algun momento tengo que sacar esto
     }
     return actions[target]
 }
 
-function enviarACarrito(prod) {
-    prod.altaCarrito()
-    console.log(carrito)
+function enviarACarrito(id, cant) {
+    const cantCompra = parseInt(cant)
+    !validarRepetido(id) ? altaCarrito(id, cantCompra) : agregarRepetidoEnCarrito(id, cantCompra)
+}
+
+validarRepetido = (id) => carrito.some((objectCarrito) => objectCarrito.id === id)
+
+function altaCarrito(id, cant) {
+    console.log(`Agrego un prod NO repetido de cantidad ${cant}`)
+    let objectCarrito = {
+        id: id,
+        cant: cant
+    }
+    carrito.push(objectCarrito)
+}
+
+function agregarRepetidoEnCarrito(id, cant) {
+    console.log(`Adiciono cantidad a un prod repetido de cantidad ${cant}`)
+    const idsCarrito = carrito.map((objectCarrito) => objectCarrito.id)
+    const posicionRepetido = idsCarrito.indexOf(id)
+    carrito[posicionRepetido].cant += cant
 }
 
 /* ================ DECLARACIÓN FUNCIÓN PRINCIPAL ================ */
