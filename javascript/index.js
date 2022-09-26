@@ -6,7 +6,7 @@ let carrito = []
 
 // VAR DOM ELEMENTS
 
-let domLoginTitle
+let domNavContainer
 let domRegistroTitle
 let domLogin
 let domLoginForm
@@ -24,6 +24,11 @@ let domSearch
 let domSearchForm
 let domSearchProduct
 let domProductos
+let domCloseSession
+let domCarrito
+let domTotalCompra
+let totalCompra = 0
+let domBtnFinCompra
 
 /* ================ CLASE USUARIOS ================ */
 
@@ -84,7 +89,7 @@ class Producto {
 /* ================ ELEMENTOS DEL DOM ================ */
 
 function domElementsInit() {
-    domLoginTitle = document.getElementById("login-titulo")
+    domNavContainer = document.getElementById("nav-container")
     domRegistroTitle = document.getElementById("registro-titulo")
     domLogin = document.getElementById("login-container")
     domLoginForm = document.getElementById("login-form")
@@ -101,20 +106,33 @@ function domElementsInit() {
     domSearchProduct = document.getElementById("search-product")
     domProductos = document.getElementById("productos-container")
     domCarrito = document.getElementById("carrito-container")
+    domBtnFinCompra = document.getElementById("btn-fin-compra")
+    domTotalCompra = document.getElementById("carrito-total")
+    domCloseSession = document.getElementById("close-session")
 }
 
 /* ================ EVENTOS DEL DOM ================ */
+
 
 function eventoLogin() {
     domLoginForm?.addEventListener("submit", gestionarLogin) // Al cambiar de HTML hay que verificar si el evento existe, sino da error
 }
 
+
 function eventoSearch() {
-    domSearchForm?.addEventListener("submit",searchProduct) // Al cambiar de HTML hay que verificar si el evento existe, sino da error
+    domSearchForm?.addEventListener("submit", searchProduct)
+}
+
+function eventoTotalCompra() {
+    domBtnFinCompra?.addEventListener("click", calcularTotalCompra)
 }
 
 function eventoRegistroUsuario() {
-    domRegistroForm?.addEventListener("submit", gestionarAlta) // Al cambiar de HTML hay que verificar si el evento existe, sino da error
+    domRegistroForm?.addEventListener("submit", gestionarAlta)
+}
+
+function eventoCloseSession() {
+    domCloseSession?.addEventListener("click", cerrarSesion)
 }
 
 /* ================ DECLARACIÓN DE FUNCIONES ================ */
@@ -124,16 +142,17 @@ function gestionarLogin(event) {
     event.preventDefault()
     let objectUser = new Usuario(domLoginUser.value, domLoginPass.value, false)
     domLoginForm.reset();
-    domLoginTitle.innerText = ""
     if (validarLogin(objectUser.user, objectUser.password)) {
-        domLoginTitle.innerText += `Bienvenido ${objectUser.user}!`
         domLogin.hidden = true
+        domNavContainer.hidden = false
+        domCloseSession.innerText += `${objectUser.user} (Salir)`
         domSearch.hidden = false
         !objectUser.esAdmin() ? mostrarProductos(productos, "client") : mostrarProductos(productos,"admin")
     }
     else {
         alert("Login fallido - Usuario o contraseña incorrectos")
         domSearch.hidden = true
+        domNavContainer.hidden = true
     }
 }
 
@@ -192,7 +211,7 @@ function mostrarProductos(listProducts, targetActions) {
         domCard.className = "producto-card"
         domCard.id = "producto-card-${producto.id}"
         domCard.innerHTML = `
-            <img src="${producto.imagen}" alt="textoPrueba" class="producto-img">
+            <img src="${producto.imagen}" alt="${producto.tipoProd}" class="producto-img">
             <div class="producto__info">
                 <h3>Producto: ${producto.tipoProd} - ${producto.marca}</h3>
                 <p>Precio: ${producto.precio} - Cantidad: ${producto.stock}</p>
@@ -216,7 +235,7 @@ function actionButtons (target, idProd) {
     const actions = {
         "admin": `<button id="modificar-prod-${idProd}" class="btn modificar-prod">Modificar</button>
                   <button id="eliminar-prod-${idProd}" class="btn eliminar-prod">Eliminar</button>`,
-        "client": `<input type="number" class="cant-producto" id="cant-carrito-${idProd}">
+        "client": `<input type="number" min="0" max="50" class="cant-producto" id="cant-carrito-${idProd}">
                    <button type="submit" id="agregar-carrito-${idProd}" class="btn agregar-carrito">Agregar al carrito</button>`,
         "": ""  //! En algun momento tengo que sacar esto
     }
@@ -225,7 +244,8 @@ function actionButtons (target, idProd) {
 
 function enviarACarrito(id, cant) {
     const cantCompra = parseInt(cant)
-    !validarRepetido(id) ? altaCarrito(id, cantCompra) : agregarRepetidoEnCarrito(id, cantCompra)
+        !validarRepetido(id) ? altaCarrito(id, cantCompra) : agregarRepetidoEnCarrito(id, cantCompra)
+    mostrarCarrito()
 }
 
 validarRepetido = (id) => carrito.some((objectCarrito) => objectCarrito.id === id)
@@ -244,6 +264,40 @@ function agregarRepetidoEnCarrito(id, cant) {
     const idsCarrito = carrito.map((objectCarrito) => objectCarrito.id)
     const posicionRepetido = idsCarrito.indexOf(id)
     carrito[posicionRepetido].cant += cant
+}
+
+function mostrarCarrito() {
+    domCarrito.innerHTML = ""
+    totalCompra = 0
+    carrito.forEach((objectCarrito) => {
+        let itemCatalogo = productos.filter((prod) => prod.id === objectCarrito.id)
+        console.log(itemCatalogo)
+        let objectCatalogo = itemCatalogo[0]
+        console.log(objectCatalogo)
+        let domItemCarrito = document.createElement("div")
+        domItemCarrito.className = "producto-card"
+        domItemCarrito.id = `item-carrito-${objectCarrito.id}`
+        domItemCarrito.innerHTML = `
+        <img src="${objectCatalogo.imagen}" alt="${objectCatalogo.tipoProd}" class="producto-img">
+        <div class="producto__info">
+        <h3>Producto: ${objectCatalogo.tipoProd} - ${objectCatalogo.marca}</h3>
+        <p>Precio unitario: ${objectCatalogo.precio} - Cantidad: ${objectCarrito.cant}</p>
+        <h4>Subtotal: ${objectCatalogo.precio * objectCarrito.cant}</h4>
+        </div>
+        `
+        domCarrito.append(domItemCarrito)
+        totalCompra += objectCatalogo.precio * objectCarrito.cant
+        console.log(totalCompra)
+    })
+}
+
+function calcularTotalCompra() {
+    domTotalCompra.innerText += `$${totalCompra}`
+}
+
+function cerrarSesion() {
+    console.log("voy a cerrar la sesión")
+    document.location.reload()
 }
 
 /* ================ DECLARACIÓN FUNCIÓN PRINCIPAL ================ */
@@ -270,7 +324,9 @@ function main() {
     domElementsInit()
     eventoLogin()
     eventoSearch()
+    eventoTotalCompra()
     eventoRegistroUsuario()
+    eventoCloseSession()
 }
 
 /* ================ LLAMADO FUNCIÓN PRINCIPAL ================ */

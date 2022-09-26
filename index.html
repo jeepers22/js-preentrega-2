@@ -9,7 +9,16 @@
 </head>
 <body>
 
-    <h1 id="login-titulo" class="login-titulo"></h1>
+    <header>
+        <nav>
+            <div id="nav-container" hidden>
+                <ul class="nav-items">
+                    <li><a href="#carrito-container"><img class="logo-carrito" src="https://img.icons8.com/ios/50/000000/shopping-cart-loaded--v2.png"/></a></li>
+                    <li id="close-session"></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
     <div id="login-container" class="login-container">
         <form id="login-form" class="login-form">
             <div class="login__item">
@@ -34,7 +43,14 @@
 
     <div class="productos-container" id="productos-container"></div>
 
-    <div class="carrito-container" id="carrito-container"></div>
+    <div class="carrito-general">
+        <div class="carrito-header">
+            <h2 class="carrito-title">CARRITO</h2>
+            <button id="btn-fin-compra" class="btn btn-fin-compra">Finalizar Compra</button>
+        </div>
+        <div class="carrito-container" id="carrito-container"></div>
+        <h4 class="carrito-total" id="carrito-total">Total Compra: </h4>
+    </div>
 
     <script src="./javascript/index.js"></script>
 </body>
