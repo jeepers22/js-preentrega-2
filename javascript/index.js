@@ -138,7 +138,6 @@ function eventoCloseSession() {
 /* ================ DECLARACIÓN DE FUNCIONES ================ */
 
 function gestionarLogin(event) {
-
     event.preventDefault()
     let objectUser = new Usuario(domLoginUser.value, domLoginPass.value, false)
     domLoginForm.reset();
@@ -147,6 +146,7 @@ function gestionarLogin(event) {
         domNavContainer.hidden = false
         domCloseSession.innerText += `${objectUser.user} (Salir)`
         domSearch.hidden = false
+        storageACarrito()
         !objectUser.esAdmin() ? mostrarProductos(productos, "client") : mostrarProductos(productos,"admin")
     }
     else {
@@ -185,25 +185,6 @@ usuarioExistente = (userAlta) => usuarios.some((usuario) => usuario.user === use
 
 productoExistente = (tipoProdAlta, marcaAlta) => productos.some((producto) => producto.tipoProd === tipoProdAlta && producto.marca === marcaAlta)
 
-// function mostrarProductos(listProducts, targetActions) {
-//     domProductos.innerHTML = ""  // Evita carga repetida de catálogo ante más de un despliegue de de compra
-//     listProducts.forEach((producto) => {
-//         domProductos.innerHTML += `
-//         <div class="producto-card" id="producto-card-${producto.id}">
-//             <img src="${producto.imagen}" alt="textoPrueba" class="producto-img">
-//             <div class= "producto__info">
-//                 <h3>Producto: ${producto.tipoProd} - ${producto.marca}</h3>
-//                 <p>Precio: ${producto.precio} - Cantidad: ${producto.stock}</p>
-//                 ${actionButtons(targetActions, producto.id)}
-//             </div>
-//         </div>
-//         `
-
-//         let domBtnAltaCarrito = document.getElementById(`agregar-carrito-${producto.id}`)
-//         domBtnAltaCarrito.addEventListener("click", () => enviarACarrito(producto))   // NO FUNCIONA
-//         console.log(domBtnAltaCarrito)
-//     })
-// }
 function mostrarProductos(listProducts, targetActions) {
     domProductos.innerHTML = ""  // Evita carga repetida de catálogo ante más de un despliegue de de compra
     listProducts.forEach((producto) => {
@@ -214,7 +195,7 @@ function mostrarProductos(listProducts, targetActions) {
             <img src="${producto.imagen}" alt="${producto.tipoProd}" class="producto-img">
             <div class="producto__info">
                 <h3>Producto: ${producto.tipoProd} - ${producto.marca}</h3>
-                <p>Precio: ${producto.precio} - Cantidad: ${producto.stock}</p>
+                <p>Precio: ${producto.precio} - Disponibles: ${producto.stock}</p>
             </div>
             <div class="producto__compra">
                 ${actionButtons(targetActions, producto.id)}
@@ -244,14 +225,14 @@ function actionButtons (target, idProd) {
 
 function enviarACarrito(id, cant) {
     const cantCompra = parseInt(cant)
-        !validarRepetido(id) ? altaCarrito(id, cantCompra) : agregarRepetidoEnCarrito(id, cantCompra)
+    !validarRepetido(id) ? altaCarrito(id, cantCompra) : agregarRepetidoEnCarrito(id, cantCompra)
+    carritoAStorage()
     mostrarCarrito()
 }
 
 validarRepetido = (id) => carrito.some((objectCarrito) => objectCarrito.id === id)
 
 function altaCarrito(id, cant) {
-    console.log(`Agrego un prod NO repetido de cantidad ${cant}`)
     let objectCarrito = {
         id: id,
         cant: cant
@@ -260,20 +241,34 @@ function altaCarrito(id, cant) {
 }
 
 function agregarRepetidoEnCarrito(id, cant) {
-    console.log(`Adiciono cantidad a un prod repetido de cantidad ${cant}`)
     const idsCarrito = carrito.map((objectCarrito) => objectCarrito.id)
     const posicionRepetido = idsCarrito.indexOf(id)
     carrito[posicionRepetido].cant += cant
 }
 
-function mostrarCarrito() {
+function carritoAStorage() {
+    const carritoJSON = JSON.stringify(carrito)
+    localStorage.setItem("carrito", carritoJSON)
+}
+
+function storageACarrito() {
+    const carritoJson = localStorage.getItem("carrito")
+    if (carritoJson) {
+        carrito = JSON.parse(carritoJson)
+        mostrarCarrito()
+    }
+}
+
+/* El carrito guarda objetos distintos que el catálogo, únicamente el id y la cantidad a comprar por el usuario
+   No guardo el producto completo porque ocuparía más espacio en memoria en vano, con sólo el id, puedo rearmar el producto */
+
+function mostrarCarrito() {   //Obtengo los atributos de los productos del catálogo que se encuentran en el carrito
     domCarrito.innerHTML = ""
     totalCompra = 0
     carrito.forEach((objectCarrito) => {
+        // itemCatalogo es un array del producto buscado
         let itemCatalogo = productos.filter((prod) => prod.id === objectCarrito.id)
-        console.log(itemCatalogo)
         let objectCatalogo = itemCatalogo[0]
-        console.log(objectCatalogo)
         let domItemCarrito = document.createElement("div")
         domItemCarrito.className = "producto-card"
         domItemCarrito.id = `item-carrito-${objectCarrito.id}`
@@ -281,13 +276,12 @@ function mostrarCarrito() {
         <img src="${objectCatalogo.imagen}" alt="${objectCatalogo.tipoProd}" class="producto-img">
         <div class="producto__info">
         <h3>Producto: ${objectCatalogo.tipoProd} - ${objectCatalogo.marca}</h3>
-        <p>Precio unitario: ${objectCatalogo.precio} - Cantidad: ${objectCarrito.cant}</p>
+        <p>Precio unitario: ${objectCatalogo.precio} - Cantidad a comprar: ${objectCarrito.cant}</p>
         <h4>Subtotal: ${objectCatalogo.precio * objectCarrito.cant}</h4>
         </div>
         `
         domCarrito.append(domItemCarrito)
         totalCompra += objectCatalogo.precio * objectCarrito.cant
-        console.log(totalCompra)
     })
 }
 
@@ -296,7 +290,6 @@ function calcularTotalCompra() {
 }
 
 function cerrarSesion() {
-    console.log("voy a cerrar la sesión")
     document.location.reload()
 }
 
