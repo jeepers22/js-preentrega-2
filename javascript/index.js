@@ -287,6 +287,9 @@ function mostrarCarrito() {   //Obtengo los atributos de los productos del catá
 
 function calcularTotalCompra() {
     domTotalCompra.innerText += `$${totalCompra}`
+    carrito = []
+    mostrarCarrito()
+    localStorage.clear()
 }
 
 function cerrarSesion() {
